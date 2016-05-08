@@ -1,0 +1,3 @@
+rootProject.name = 'android-nmea-parser'
+include 'parser'
+
