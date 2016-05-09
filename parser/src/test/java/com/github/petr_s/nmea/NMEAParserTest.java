@@ -9,6 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NMEAParserTest {
@@ -30,7 +31,9 @@ public class NMEAParserTest {
         new NMEAParser(handler).parse("");
 
         verify(handler).onStart();
+        verify(handler).onUnrecognized("");
         verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
     }
 
     @Test
@@ -39,12 +42,14 @@ public class NMEAParserTest {
         new NMEAParser(handler).parse(sentence);
 
         verify(handler).onStart();
-        verify(handler).onRMC(eq(1460997247000L),
+        verify(handler).onRMC(eq(1460937600000L),
+                eq(59647000L),
                 doubleThat(new RoughlyEqDouble(52.14583)),
                 doubleThat(new RoughlyEqDouble(16.87111)),
                 floatThat(new RoughlyEqFloat(0.02057f)),
                 floatThat(new RoughlyEqFloat(36.97f)));
         verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
     }
 
     @Test
@@ -55,6 +60,7 @@ public class NMEAParserTest {
         verify(handler).onStart();
         verify(handler).onBadChecksum(66, 56);
         verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
     }
 
     @Test
@@ -65,16 +71,24 @@ public class NMEAParserTest {
         verify(handler).onStart();
         verify(handler).onUnrecognized(sentence);
         verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
     }
 
     @Test
     public void testParseGPGGA() throws Exception {
-        String sentence = "$GPGGA,163407.000,5004.7485,N,01423.8956,E,1,07,1.7,285.7,M,45.5,M,,*5F";
+        String sentence = "$GPGGA,163407.000,5004.7485,N,01423.8956,E,1,07,1.7,285.7,M,45.5,M,,0000*5F";
         new NMEAParser(handler).parse(sentence);
 
         verify(handler).onStart();
-
+        verify(handler).onGGA(eq(59647000L),
+                doubleThat(new RoughlyEqDouble(52.14583)),
+                doubleThat(new RoughlyEqDouble(16.87111)),
+                floatThat(new RoughlyEqFloat(240.2f)),
+                eq(NMEAHandler.FixQuality.GPS),
+                eq(7),
+                floatThat(new RoughlyEqFloat(1.7f)));
         verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
     }
 
     private class RoughlyEqDouble extends ArgumentMatcher<Double> {
