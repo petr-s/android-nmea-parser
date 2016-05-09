@@ -11,13 +11,14 @@ import java.util.regex.Pattern;
 
 public class NMEAParser {
     private static final float KNOTS2MPS = 0.514444f;
-    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HHmmss.SSS", Locale.US);
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HHmmss", Locale.US);
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("ddMMyy", Locale.US);
     private static final String COMMA = ",";
     private static final String CAP_FLOAT = "(\\d*[.]?\\d+)";
     private static final String HEX_INT = "[0-9a-fA-F]";
     private static final Pattern PATTERN_GPRMC = Pattern.compile("^\\$GPRMC" + COMMA +
-            "(\\d{6}[.]\\d+)?" + COMMA +
+            "(\\d{6})?[.]?" +
+            "(\\d*)?" + COMMA +
             regexify(Status.class) + COMMA +
             "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
@@ -29,7 +30,8 @@ public class NMEAParser {
             CAP_FLOAT + "?" + COMMA +
             "[*](" + HEX_INT + "{2})$");
     private static final Pattern PATTERN_GPGGA = Pattern.compile("^\\$GPGGA" + COMMA +
-            "(\\d{6}[.]\\d+)?" + COMMA +
+            "(\\d{6})?[.]?" +
+            "(\\d*)?" + COMMA +
             "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
             "(\\d{3})(\\d{2})[.](\\d+)?" + COMMA +
@@ -76,6 +78,7 @@ public class NMEAParser {
         ExMatcher matcher = new ExMatcher(PATTERN_GPRMC.matcher(sentence));
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
+            time += fixms(matcher.nextInt("time-ms"));
             if (Status.valueOf(matcher.nextString("status")) == Status.A) {
                 double latitude = toAngle(matcher.nextInt("degrees"),
                         matcher.nextInt("minutes"),
@@ -114,6 +117,7 @@ public class NMEAParser {
         ExMatcher matcher = new ExMatcher(PATTERN_GPGGA.matcher(sentence));
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
+            time += fixms(matcher.nextInt("time-ms"));
             double latitude = toAngle(matcher.nextInt("degrees"),
                     matcher.nextInt("minutes"),
                     matcher.nextInt("seconds"));
@@ -157,6 +161,10 @@ public class NMEAParser {
             checksum ^= b;
         }
         return checksum;
+    }
+
+    private static int fixms(int ms) {
+        return ms == 0 ? 0 : (int) Math.pow(10, 3 - (int) (Math.log10(ms) + 1));
     }
 
     private static double toAngle(int d, int m, int s) {
