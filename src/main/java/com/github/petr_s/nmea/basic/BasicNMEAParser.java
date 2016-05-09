@@ -1,6 +1,6 @@
-package com.github.petr_s.nmea.core;
+package com.github.petr_s.nmea.basic;
 
-import com.github.petr_s.nmea.core.NMEAHandler.FixQuality;
+import com.github.petr_s.nmea.basic.BasicNMEAHandler.FixQuality;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
@@ -9,7 +9,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class NMEAParser {
+public class BasicNMEAParser {
     private static final float KNOTS2MPS = 0.514444f;
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HHmmss", Locale.US);
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("ddMMyy", Locale.US);
@@ -47,13 +47,13 @@ public class NMEAParser {
     private static ParsingFunction[] functions = new ParsingFunction[]{
             new ParsingFunction() {
                 @Override
-                public boolean parse(NMEAHandler handler, String sentence) throws Exception {
+                public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
                     return parseGPRMC(handler, sentence);
                 }
             },
             new ParsingFunction() {
                 @Override
-                public boolean parse(NMEAHandler handler, String sentence) throws Exception {
+                public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
                     return parseGPGGA(handler, sentence);
                 }
             }
@@ -64,9 +64,9 @@ public class NMEAParser {
         DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
-    private final NMEAHandler handler;
+    private final BasicNMEAHandler handler;
 
-    public NMEAParser(NMEAHandler handler) {
+    public BasicNMEAParser(BasicNMEAHandler handler) {
         this.handler = handler;
 
         if (handler == null) {
@@ -74,7 +74,7 @@ public class NMEAParser {
         }
     }
 
-    private static boolean parseGPRMC(NMEAHandler handler, String sentence) throws Exception {
+    private static boolean parseGPRMC(BasicNMEAHandler handler, String sentence) throws Exception {
         ExMatcher matcher = new ExMatcher(PATTERN_GPRMC.matcher(sentence));
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
@@ -113,7 +113,7 @@ public class NMEAParser {
         return false;
     }
 
-    private static boolean parseGPGGA(NMEAHandler handler, String sentence) throws Exception {
+    private static boolean parseGPGGA(BasicNMEAHandler handler, String sentence) throws Exception {
         ExMatcher matcher = new ExMatcher(PATTERN_GPGGA.matcher(sentence));
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
@@ -218,7 +218,7 @@ public class NMEAParser {
     }
 
     private static abstract class ParsingFunction {
-        public abstract boolean parse(NMEAHandler handler, String sentence) throws Exception;
+        public abstract boolean parse(BasicNMEAHandler handler, String sentence) throws Exception;
     }
 
     private static class ExMatcher {
