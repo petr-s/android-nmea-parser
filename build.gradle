@@ -4,38 +4,44 @@ buildscript {
     }
 
     dependencies {
+        classpath 'com.android.tools.build:gradle:2.0.0'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
     }
 }
 
-allprojects {
-    apply plugin: 'java'
-    apply plugin: "jacoco"
-    apply plugin: 'com.github.kt3k.coveralls'
+apply plugin: 'com.android.library'
 
-    sourceCompatibility = 1.6
+group 'com.github.petr-s'
+version '0.1-SNAPSHOT'
 
-    group 'com.github.petr-s'
-    version '0.1-SNAPSHOT'
-}
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
 
-subprojects {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        testCompile 'junit:junit:4.12'
-        testCompile "org.mockito:mockito-core:1.+"
-    }
-
-    jacocoTestReport {
-        reports {
-            html.enabled = true
-            xml.enabled = true
-            csv.enabled = false
-        }
+    defaultConfig {
+        minSdkVersion 8
     }
 }
 
-check.dependsOn jacocoTestReport
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.google.android:android:2.1.2'
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:1.+"
+}
+
+/*apply plugin: "jacoco"
+apply plugin: 'com.github.kt3k.coveralls'
+
+jacocoTestReport {
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
+}
+
+check.dependsOn jacocoTestReport*/

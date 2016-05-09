@@ -1,6 +1,6 @@
-package com.github.petr_s.nmea;
+package com.github.petr_s.nmea.core;
 
-import com.github.petr_s.nmea.NMEAHandler.FixQuality;
+import com.github.petr_s.nmea.core.NMEAHandler.FixQuality;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
