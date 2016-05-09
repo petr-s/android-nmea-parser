@@ -1,6 +1,6 @@
-package com.github.petr_s.nmea.core;
+package com.github.petr_s.nmea.basic;
 
-public interface NMEAHandler {
+public interface BasicNMEAHandler {
     void onStart();
 
     /***

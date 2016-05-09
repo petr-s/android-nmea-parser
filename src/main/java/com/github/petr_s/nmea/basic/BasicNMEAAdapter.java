@@ -1,6 +1,6 @@
-package com.github.petr_s.nmea.core;
+package com.github.petr_s.nmea.basic;
 
-public class NMEAAdapter implements NMEAHandler {
+public class BasicNMEAAdapter implements BasicNMEAHandler {
     @Override
     public void onStart() {
 
