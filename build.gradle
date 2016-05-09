@@ -1,5 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
+    }
+}
+
 allprojects {
     apply plugin: 'java'
+    apply plugin: "jacoco"
+    apply plugin: 'com.github.kt3k.coveralls'
+
     sourceCompatibility = 1.6
 
     group 'com.github.petr-s'
@@ -10,8 +23,19 @@ subprojects {
     repositories {
         mavenCentral()
     }
+
     dependencies {
         testCompile 'junit:junit:4.12'
         testCompile "org.mockito:mockito-core:1.+"
     }
+
+    jacocoTestReport {
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
+    }
 }
+
+check.dependsOn jacocoTestReport
