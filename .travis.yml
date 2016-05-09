@@ -16,4 +16,4 @@ before_install:
   - chmod +x gradlew
 
 script:
-  - ./gradlew testDebugUnitTest coveralls
+  - ./gradlew testDebugUnitTest jacocoTestDebugUnitTestReport coveralls
