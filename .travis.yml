@@ -1,4 +1,11 @@
-language: java
+language: android
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-23.0.2
+    - android-23
 
 jdk:
   - oraclejdk8
@@ -6,7 +13,10 @@ jdk:
   - openjdk7
 
 before_install:
- - chmod +x gradlew
+  - chmod +x gradlew
 
-after_success:
-  - gradle jacocoTestReport coveralls
+script:
+  - ./gradlew test
+
+#after_success:
+#  - gradle jacocoTestReport coveralls

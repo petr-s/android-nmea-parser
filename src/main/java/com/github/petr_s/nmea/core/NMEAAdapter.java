@@ -1,4 +1,4 @@
-package com.github.petr_s.nmea;
+package com.github.petr_s.nmea.core;
 
 public class NMEAAdapter implements NMEAHandler {
     @Override
