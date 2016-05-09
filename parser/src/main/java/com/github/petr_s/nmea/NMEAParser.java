@@ -1,5 +1,7 @@
 package com.github.petr_s.nmea;
 
+import com.github.petr_s.nmea.NMEAHandler.FixQuality;
+
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -10,7 +12,7 @@ import java.util.regex.Pattern;
 public class NMEAParser {
     private static final float KNOTS2MPS = 0.514444f;
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HHmmss.SSS", Locale.US);
-    private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("ddMMyyHHmmss.SSS", Locale.US);
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("ddMMyy", Locale.US);
     private static final String COMMA = ",";
     private static final String CAP_FLOAT = "(\\d*[.]?\\d+)";
     private static final String HEX_INT = "[0-9a-fA-F]";
@@ -26,7 +28,7 @@ public class NMEAParser {
             "(\\d{6})?" + COMMA +
             CAP_FLOAT + "?" + COMMA +
             "[*](" + HEX_INT + "{2})$");
-    private static final Pattern PATTERN_GPGGA = Pattern.compile("\\$GPGGA" + COMMA +
+    private static final Pattern PATTERN_GPGGA = Pattern.compile("^\\$GPGGA" + COMMA +
             "(\\d{6}[.]\\d+)?" + COMMA +
             "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
@@ -37,7 +39,9 @@ public class NMEAParser {
             CAP_FLOAT + "?" + COMMA +
             CAP_FLOAT + "?,[M]" + COMMA +
             CAP_FLOAT + "?,[M]" + COMMA +
-            ",\\d*[*](" + HEX_INT + "{2})");
+            CAP_FLOAT + "?" + COMMA +
+            "(\\d{4})?" +
+            "[*](" + HEX_INT + "{2})$");
     private static ParsingFunction[] functions = new ParsingFunction[]{
             new ParsingFunction() {
                 @Override
@@ -54,7 +58,8 @@ public class NMEAParser {
     };
 
     static {
-        DATE_TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+        TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     private final NMEAHandler handler;
@@ -70,7 +75,7 @@ public class NMEAParser {
     private static boolean parseGPRMC(NMEAHandler handler, String sentence) throws Exception {
         ExMatcher matcher = new ExMatcher(PATTERN_GPRMC.matcher(sentence));
         if (matcher.matches()) {
-            String time = matcher.nextString("time");
+            long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
             if (Status.valueOf(matcher.nextString("status")) == Status.A) {
                 double latitude = toAngle(matcher.nextInt("degrees"),
                         matcher.nextInt("minutes"),
@@ -82,7 +87,7 @@ public class NMEAParser {
                 HDir hDir = HDir.valueOf(matcher.nextString("horizontal-direction"));
                 float speed = matcher.nextFloat("speed") * KNOTS2MPS;
                 float direction = matcher.nextFloat("direction");
-                long dateTime = DATE_TIME_FORMAT.parse(matcher.nextString("date") + time).getTime();
+                long date = DATE_FORMAT.parse(matcher.nextString("date")).getTime();
                 matcher.nextFloat("asd");
                 int expected_checksum = matcher.nextHexInt("checksum");
                 int actual_checksum = calculateChecksum(sentence);
@@ -90,7 +95,8 @@ public class NMEAParser {
                 if (actual_checksum != expected_checksum) {
                     handler.onBadChecksum(expected_checksum, actual_checksum);
                 } else {
-                    handler.onRMC(dateTime,
+                    handler.onRMC(date,
+                            time,
                             vDir.equals(VDir.N) ? latitude : -latitude,
                             hDir.equals(HDir.E) ? longitude : -longitude,
                             speed,
@@ -116,13 +122,26 @@ public class NMEAParser {
                     matcher.nextInt("minutes"),
                     matcher.nextInt("seconds"));
             HDir hDir = HDir.valueOf(matcher.nextString("horizontal-direction"));
+            FixQuality quality = FixQuality.values()[matcher.nextInt("quality")];
+            int satellites = matcher.nextInt("n-satellites");
+            float hdop = matcher.nextFloat("hdop");
+            float altitude = matcher.nextFloat("altitude");
+            float separation = matcher.nextFloat("separation");
+            Float age = matcher.nextFloat("age");
+            Integer station = matcher.nextInt("station");
             int expected_checksum = matcher.nextHexInt("checksum");
             int actual_checksum = calculateChecksum(sentence);
 
             if (actual_checksum != expected_checksum) {
                 handler.onBadChecksum(expected_checksum, actual_checksum);
             } else {
-                // TODO: ...
+                handler.onGGA(time,
+                        vDir.equals(VDir.N) ? latitude : -latitude,
+                        hDir.equals(HDir.E) ? longitude : -longitude,
+                        altitude - separation,
+                        quality,
+                        satellites,
+                        hdop);
             }
 
             return true;

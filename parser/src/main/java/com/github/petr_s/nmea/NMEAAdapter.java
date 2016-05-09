@@ -7,12 +7,12 @@ public class NMEAAdapter implements NMEAHandler {
     }
 
     @Override
-    public void onRMC(long dateTime, double latitude, double longitude, float speed, float direction) {
+    public void onRMC(long date, long time, double latitude, double longitude, float speed, float direction) {
 
     }
 
     @Override
-    public void onGGA(long time, double latitude, double longitude, int quality, int satellites, float hdop, float altitude, float geoidHeight) {
+    public void onGGA(long time, double latitude, double longitude, float altitude, FixQuality quality, int satellites, float hdop) {
 
     }
 
