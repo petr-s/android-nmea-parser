@@ -1,15 +1,19 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.0.0'
+        classpath 'com.dicedmelon.gradle:jacoco-android:0.1.1'
         classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
     }
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'jacoco-android'
+apply plugin: 'com.github.kt3k.coveralls'
 
 group 'com.github.petr-s'
 version '0.1-SNAPSHOT'
@@ -19,7 +23,7 @@ android {
     buildToolsVersion '23.0.2'
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 15
     }
 
     buildTypes {
@@ -34,19 +38,12 @@ repositories {
 }
 
 dependencies {
-    compile 'com.google.android:android:2.1.2'
+    compile 'com.google.android:android:4.1.1.4'
     testCompile 'junit:junit:4.12'
-    testCompile "org.mockito:mockito-core:1.+"
+    testCompile "org.mockito:mockito-core:1.9.5"
 }
-
-apply plugin: 'com.github.kt3k.coveralls'
 
 coveralls {
-    jacocoReportPath = "${buildDir}/reports/coverage/debug/report.xml"
-}
-
-tasks.coveralls {
-    dependsOn 'testDebugUnitTest'
-    onlyIf { System.env.'CI' }
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoTestDebugUnitTestReport/jacocoTestDebugUnitTestReport.xml"
 }
 
