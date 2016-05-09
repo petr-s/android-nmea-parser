@@ -5,7 +5,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.0.0'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.4.0'
     }
 }
 
@@ -21,6 +21,12 @@ android {
     defaultConfig {
         minSdkVersion 8
     }
+
+    buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
+    }
 }
 
 repositories {
@@ -33,15 +39,14 @@ dependencies {
     testCompile "org.mockito:mockito-core:1.+"
 }
 
-/*apply plugin: "jacoco"
 apply plugin: 'com.github.kt3k.coveralls'
 
-jacocoTestReport {
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        csv.enabled = false
-    }
+coveralls {
+    jacocoReportPath = "${buildDir}/reports/coverage/debug/report.xml"
 }
 
-check.dependsOn jacocoTestReport*/
+tasks.coveralls {
+    dependsOn 'testDebugUnitTest'
+    onlyIf { System.env.'CI' }
+}
+
