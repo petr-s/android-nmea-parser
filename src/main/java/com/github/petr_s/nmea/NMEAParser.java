@@ -5,11 +5,23 @@ import com.github.petr_s.nmea.basic.BasicNMEAHandler;
 import com.github.petr_s.nmea.basic.BasicNMEAParser;
 
 public class NMEAParser implements BasicNMEAHandler {
+    public static final String LOCATION_PROVIDER_NAME = "nmea-parser";
     private final NMEAHandler handler;
     private final BasicNMEAParser coreParser;
+    private final LocationFactory locationFactory;
 
     public NMEAParser(NMEAHandler handler) {
+        this(handler, new LocationFactory() {
+            @Override
+            public Location newLocation() {
+                return new Location(LOCATION_PROVIDER_NAME);
+            }
+        });
+    }
+
+    public NMEAParser(NMEAHandler handler, LocationFactory locationFactory) {
         this.handler = handler;
+        this.locationFactory = locationFactory;
         coreParser = new BasicNMEAParser(this);
 
         if (handler == null) {
@@ -21,10 +33,6 @@ public class NMEAParser implements BasicNMEAHandler {
         coreParser.parse(sentence);
     }
 
-    private void yieldNewLocation(Location location) {
-        handler.onLocation(location);
-    }
-
     @Override
     public synchronized void onStart() {
         handler.onStart();
@@ -32,12 +40,10 @@ public class NMEAParser implements BasicNMEAHandler {
 
     @Override
     public synchronized void onRMC(long date, long time, double latitude, double longitude, float speed, float direction) {
-
     }
 
     @Override
     public synchronized void onGGA(long time, double latitude, double longitude, float altitude, FixQuality quality, int satellites, float hdop) {
-
     }
 
     @Override
