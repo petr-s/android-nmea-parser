@@ -1,12 +1,11 @@
 package com.github.petr_s.nmea.basic;
 
-import com.github.petr_s.nmea.Helper.RoughlyEqDouble;
-import com.github.petr_s.nmea.Helper.RoughlyEqFloat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.github.petr_s.nmea.Helper.roughlyEq;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -44,10 +43,10 @@ public class BasicNMEAParserTest {
         verify(handler).onStart();
         verify(handler).onRMC(eq(1460937600000L),
                 eq(59647000L),
-                doubleThat(new RoughlyEqDouble(52.14583)),
-                doubleThat(new RoughlyEqDouble(16.87111)),
-                floatThat(new RoughlyEqFloat(0.02057f)),
-                floatThat(new RoughlyEqFloat(36.97f)));
+                doubleThat(roughlyEq(52.14583)),
+                doubleThat(roughlyEq(16.87111)),
+                floatThat(roughlyEq(0.02057f)),
+                floatThat(roughlyEq(36.97f)));
         verify(handler).onFinished();
         verifyNoMoreInteractions(handler);
     }
@@ -81,12 +80,12 @@ public class BasicNMEAParserTest {
 
         verify(handler).onStart();
         verify(handler).onGGA(eq(59647000L),
-                doubleThat(new RoughlyEqDouble(52.14583)),
-                doubleThat(new RoughlyEqDouble(16.87111)),
-                floatThat(new RoughlyEqFloat(240.2f)),
+                doubleThat(roughlyEq(52.14583)),
+                doubleThat(roughlyEq(16.87111)),
+                floatThat(roughlyEq(240.2f)),
                 eq(BasicNMEAHandler.FixQuality.GPS),
                 eq(7),
-                floatThat(new RoughlyEqFloat(1.7f)));
+                floatThat(roughlyEq(1.7f)));
         verify(handler).onFinished();
         verifyNoMoreInteractions(handler);
     }

@@ -7,5 +7,11 @@ public interface NMEAHandler {
 
     void onLocation(Location location);
 
+    void onUnrecognized(String sentence);
+
+    void onBadChecksum(int expected, int actual);
+
+    void onException(Exception e);
+
     void onFinish();
 }

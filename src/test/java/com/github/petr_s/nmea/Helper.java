@@ -4,41 +4,39 @@ import org.hamcrest.Description;
 import org.mockito.ArgumentMatcher;
 
 public class Helper {
-    public static class RoughlyEqDouble extends ArgumentMatcher<Double> {
-        private static final double DELTA = 0.0001;
-        private double expected;
-
-        public RoughlyEqDouble(double expected) {
-            this.expected = expected;
-        }
-
-        @Override
-        public boolean matches(Object argument) {
-            return Math.abs(expected - (Double) argument) <= DELTA;
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendText(Double.toString(expected) + "±" + Double.toString(DELTA));
-        }
+    public static ArgumentMatcher<Double> roughlyEq(final double expected) {
+        return roughlyEq(expected, 0.0001);
     }
 
-    public static class RoughlyEqFloat extends ArgumentMatcher<Float> {
-        private static final float DELTA = 0.0001f;
-        private float expected;
+    public static ArgumentMatcher<Double> roughlyEq(final double expected, final double delta) {
+        return new ArgumentMatcher<Double>() {
+            @Override
+            public boolean matches(Object argument) {
+                return Math.abs(expected - (Double) argument) <= delta;
+            }
 
-        public RoughlyEqFloat(float expected) {
-            this.expected = expected;
-        }
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(Double.toString(expected) + "±" + Double.toString(delta));
+            }
+        };
+    }
 
-        @Override
-        public boolean matches(Object argument) {
-            return Math.abs(expected - (Float) argument) <= DELTA;
-        }
+    public static ArgumentMatcher<Float> roughlyEq(final float expected) {
+        return roughlyEq(expected, 0.0001f);
+    }
 
-        @Override
-        public void describeTo(Description description) {
-            description.appendText(Float.toString(expected) + "±" + Float.toString(DELTA));
-        }
+    public static ArgumentMatcher<Float> roughlyEq(final float expected, final float delta) {
+        return new ArgumentMatcher<Float>() {
+            @Override
+            public boolean matches(Object argument) {
+                return Math.abs(expected - (Float) argument) <= delta;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(Float.toString(expected) + "±" + Float.toString(delta));
+            }
+        };
     }
 }
