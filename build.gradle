@@ -16,8 +16,6 @@ apply plugin: 'jacoco-android'
 apply plugin: 'com.github.kt3k.coveralls'
 apply from: 'maven-push.gradle'
 
-group 'com.github.petr-s'
-version '0.1-SNAPSHOT'
 
 android {
     compileSdkVersion 23
