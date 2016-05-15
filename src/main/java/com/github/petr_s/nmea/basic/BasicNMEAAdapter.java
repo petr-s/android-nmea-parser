@@ -17,6 +17,11 @@ public class BasicNMEAAdapter implements BasicNMEAHandler {
     }
 
     @Override
+    public void onGSV(int satellites, int index, int prn, float elevation, float azimuth, int snr) {
+
+    }
+
+    @Override
     public void onUnrecognized(String sentence) {
 
     }

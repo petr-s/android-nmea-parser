@@ -44,6 +44,31 @@ public class BasicNMEAParser {
             CAP_FLOAT + "?" + COMMA +
             "(\\d{4})?" +
             "[*](" + HEX_INT + "{2})$");
+    private static final Pattern PATTERN_GPGSV = Pattern.compile("^\\$GPGSV" + COMMA +
+            "(\\d+)" + COMMA +
+            "(\\d+)" + COMMA +
+            "(\\d{2})" + COMMA +
+
+            "(\\d{2})" + COMMA +
+            "(\\d{2})" + COMMA +
+            "(\\d{3})" + COMMA +
+            "(\\d{2})" + COMMA +
+
+            "(\\d{2})?" + COMMA + "?" +
+            "(\\d{2})?" + COMMA + "?" +
+            "(\\d{3})?" + COMMA + "?" +
+            "(\\d{2})?" + COMMA + "?" +
+
+            "(\\d{2})?" + COMMA + "?" +
+            "(\\d{2})?" + COMMA + "?" +
+            "(\\d{3})?" + COMMA + "?" +
+            "(\\d{2})?" + COMMA + "?" +
+
+            "(\\d{2})?" + COMMA + "?" +
+            "(\\d{2})?" + COMMA + "?" +
+            "(\\d{3})?" + COMMA + "?" +
+            "(\\d{2})?" +
+            "[*](" + HEX_INT + "{2})$");
     private static ParsingFunction[] functions = new ParsingFunction[]{
             new ParsingFunction() {
                 @Override
@@ -55,6 +80,12 @@ public class BasicNMEAParser {
                 @Override
                 public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
                     return parseGPGGA(handler, sentence);
+                }
+            },
+            new ParsingFunction() {
+                @Override
+                public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
+                    return parseGPGSV(handler, sentence);
                 }
             }
     };
@@ -151,6 +182,39 @@ public class BasicNMEAParser {
             return true;
         }
 
+        return false;
+    }
+
+    private static boolean parseGPGSV(BasicNMEAHandler handler, String sentence) throws Exception {
+        ExMatcher matcher = new ExMatcher(PATTERN_GPGSV.matcher(sentence));
+        if (matcher.matches()) {
+            int sentences = matcher.nextInt("n-sentences");
+            int index = matcher.nextInt("sentence-index") - 1;
+            int satellites = matcher.nextInt("n-satellites");
+
+            Integer[][] temp = new Integer[4][4];
+            for (int i = 0; i < 4; i++) {
+                temp[i][0] = matcher.nextInt("prn");
+                temp[i][1] = matcher.nextInt("elevation");
+                temp[i][2] = matcher.nextInt("azimuth");
+                temp[i][3] = matcher.nextInt("snr");
+            }
+
+            int expected_checksum = matcher.nextHexInt("checksum");
+            int actual_checksum = calculateChecksum(sentence);
+
+            if (actual_checksum != expected_checksum) {
+                handler.onBadChecksum(expected_checksum, actual_checksum);
+            } else {
+                for (int i = 0; i < 4; i++) {
+                    if (temp[i][0] != null) {
+                        handler.onGSV(satellites, index * 4 + i, temp[i][0], temp[i][1], temp[i][2], temp[i][3]);
+                    }
+                }
+            }
+
+            return true;
+        }
         return false;
     }
 

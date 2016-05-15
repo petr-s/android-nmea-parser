@@ -28,6 +28,19 @@ public interface BasicNMEAHandler {
      */
     void onGGA(long time, double latitude, double longitude, float altitude, FixQuality quality, int satellites, float hdop);
 
+    /***
+     * Called on GPGSV parsed.
+     * Note that single nmea sentence contains up to 4 satellites therefore you can receive 4 calls per sentence.
+     *
+     * @param satellites total number of satellites
+     * @param index      index of satellite
+     * @param prn        pseudo-random noise number
+     * @param elevation  elevation in degrees
+     * @param azimuth    azimuth in degrees
+     * @param snr        signal to noise ratio
+     */
+    void onGSV(int satellites, int index, int prn, float elevation, float azimuth, int snr);
+
     void onUnrecognized(String sentence);
 
     void onBadChecksum(int expected, int actual);

@@ -90,6 +90,11 @@ public class NMEAParser implements BasicNMEAHandler {
     }
 
     @Override
+    public synchronized void onGSV(int satellites, int index, int prn, float elevation, float azimuth, int snr) {
+
+    }
+
+    @Override
     public synchronized void onUnrecognized(String sentence) {
         handler.onUnrecognized(sentence);
     }

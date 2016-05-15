@@ -6,9 +6,10 @@ import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.github.petr_s.nmea.Helper.roughlyEq;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Matchers.doubleThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.floatThat;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BasicNMEAParserTest {
@@ -87,6 +88,118 @@ public class BasicNMEAParserTest {
                 eq(7),
                 floatThat(roughlyEq(1.7f)));
         verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
+    public void testParseGPGSVSingle() throws Exception {
+        String sentence = "$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D";
+        new BasicNMEAParser(handler).parse(sentence);
+
+        verify(handler).onStart();
+        verify(handler).onGSV(eq(11),
+                eq(0),
+                eq(29),
+                eq(86.0f),
+                eq(273.0f),
+                eq(30));
+        verify(handler).onGSV(eq(11),
+                eq(1),
+                eq(25),
+                eq(60.0f),
+                eq(110.0f),
+                eq(38));
+        verify(handler).onGSV(eq(11),
+                eq(2),
+                eq(31),
+                eq(52.0f),
+                eq(278.0f),
+                eq(47));
+        verify(handler).onGSV(eq(11),
+                eq(3),
+                eq(2),
+                eq(28.0f),
+                eq(50.0f),
+                eq(39));
+        verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
+    public void testParseGPGSVFull() throws Exception {
+        BasicNMEAParser parser = new BasicNMEAParser(handler);
+        parser.parse("$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D");
+        parser.parse("$GPGSV,3,2,11,12,23,110,34,26,18,295,29,21,17,190,30,05,11,092,25*72");
+        parser.parse("$GPGSV,3,3,11,14,02,232,13,23,02,346,12,20,01,135,13*48");
+
+        verify(handler, times(3)).onStart();
+        verify(handler).onGSV(eq(11),
+                eq(0),
+                eq(29),
+                eq(86.0f),
+                eq(273.0f),
+                eq(30));
+        verify(handler).onGSV(eq(11),
+                eq(1),
+                eq(25),
+                eq(60.0f),
+                eq(110.0f),
+                eq(38));
+        verify(handler).onGSV(eq(11),
+                eq(2),
+                eq(31),
+                eq(52.0f),
+                eq(278.0f),
+                eq(47));
+        verify(handler).onGSV(eq(11),
+                eq(3),
+                eq(2),
+                eq(28.0f),
+                eq(50.0f),
+                eq(39));
+        verify(handler).onGSV(eq(11),
+                eq(4),
+                eq(12),
+                eq(23.0f),
+                eq(110.0f),
+                eq(34));
+        verify(handler).onGSV(eq(11),
+                eq(5),
+                eq(26),
+                eq(18.0f),
+                eq(295.0f),
+                eq(29));
+        verify(handler).onGSV(eq(11),
+                eq(6),
+                eq(21),
+                eq(17.0f),
+                eq(190.0f),
+                eq(30));
+        verify(handler).onGSV(eq(11),
+                eq(7),
+                eq(5),
+                eq(11.0f),
+                eq(92.0f),
+                eq(25));
+        verify(handler).onGSV(eq(11),
+                eq(8),
+                eq(14),
+                eq(2.0f),
+                eq(232.0f),
+                eq(13));
+        verify(handler).onGSV(eq(11),
+                eq(9),
+                eq(23),
+                eq(2.0f),
+                eq(346.0f),
+                eq(12));
+        verify(handler).onGSV(eq(11),
+                eq(10),
+                eq(20),
+                eq(1.0f),
+                eq(135.0f),
+                eq(13));
+        verify(handler, times(3)).onFinished();
         verifyNoMoreInteractions(handler);
     }
 }
