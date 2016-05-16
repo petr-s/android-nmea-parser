@@ -4,6 +4,7 @@ import com.github.petr_s.nmea.basic.BasicNMEAHandler.FixQuality;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -16,8 +17,8 @@ public class BasicNMEAParser {
     private static final String COMMA = ",";
     private static final String CAP_FLOAT = "(\\d*[.]?\\d+)";
     private static final String HEX_INT = "[0-9a-fA-F]";
-    private static final Pattern PATTERN_GPRMC = Pattern.compile("^\\$GPRMC" + COMMA +
-            "(\\d{6})?[.]?" +
+    private static final Pattern GENERAL_SENTENCE = Pattern.compile("^\\$(\\w{5}),(.*)[*](" + HEX_INT + "{2})$");
+    private static final Pattern GPRMC = Pattern.compile("(\\d{6})?[.]?" +
             "(\\d*)?" + COMMA +
             regexify(Status.class) + COMMA +
             "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
@@ -27,10 +28,8 @@ public class BasicNMEAParser {
             CAP_FLOAT + "?" + COMMA +
             CAP_FLOAT + "?" + COMMA +
             "(\\d{6})?" + COMMA +
-            CAP_FLOAT + "?" + COMMA +
-            "[*](" + HEX_INT + "{2})$");
-    private static final Pattern PATTERN_GPGGA = Pattern.compile("^\\$GPGGA" + COMMA +
-            "(\\d{6})?[.]?" +
+            CAP_FLOAT + "?" + COMMA);
+    private static final Pattern GPGGA = Pattern.compile("(\\d{6})?[.]?" +
             "(\\d*)?" + COMMA +
             "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
@@ -42,10 +41,8 @@ public class BasicNMEAParser {
             CAP_FLOAT + "?,[M]" + COMMA +
             CAP_FLOAT + "?,[M]" + COMMA +
             CAP_FLOAT + "?" + COMMA +
-            "(\\d{4})?" +
-            "[*](" + HEX_INT + "{2})$");
-    private static final Pattern PATTERN_GPGSV = Pattern.compile("^\\$GPGSV" + COMMA +
-            "(\\d+)" + COMMA +
+            "(\\d{4})?");
+    private static final Pattern GPGSV = Pattern.compile("(\\d+)" + COMMA +
             "(\\d+)" + COMMA +
             "(\\d{2})" + COMMA +
 
@@ -67,32 +64,30 @@ public class BasicNMEAParser {
             "(\\d{2})?" + COMMA + "?" +
             "(\\d{2})?" + COMMA + "?" +
             "(\\d{3})?" + COMMA + "?" +
-            "(\\d{2})?" +
-            "[*](" + HEX_INT + "{2})$");
-    private static ParsingFunction[] functions = new ParsingFunction[]{
-            new ParsingFunction() {
-                @Override
-                public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
-                    return parseGPRMC(handler, sentence);
-                }
-            },
-            new ParsingFunction() {
-                @Override
-                public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
-                    return parseGPGGA(handler, sentence);
-                }
-            },
-            new ParsingFunction() {
-                @Override
-                public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
-                    return parseGPGSV(handler, sentence);
-                }
-            }
-    };
+            "(\\d{2})?");
+    private static HashMap<String, ParsingFunction> functions = new HashMap<>();
 
     static {
         TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
         DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+        functions.put("GPRMC", new ParsingFunction() {
+            @Override
+            public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
+                return parseGPRMC(handler, sentence);
+            }
+        });
+        functions.put("GPGGA", new ParsingFunction() {
+            @Override
+            public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
+                return parseGPGGA(handler, sentence);
+            }
+        });
+        functions.put("GPGSV", new ParsingFunction() {
+            @Override
+            public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
+                return parseGPGSV(handler, sentence);
+            }
+        });
     }
 
     private final BasicNMEAHandler handler;
@@ -106,7 +101,7 @@ public class BasicNMEAParser {
     }
 
     private static boolean parseGPRMC(BasicNMEAHandler handler, String sentence) throws Exception {
-        ExMatcher matcher = new ExMatcher(PATTERN_GPRMC.matcher(sentence));
+        ExMatcher matcher = new ExMatcher(GPRMC.matcher(sentence));
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
             time += fixms(matcher.nextInt("time-ms"));
@@ -123,19 +118,13 @@ public class BasicNMEAParser {
                 float direction = matcher.nextFloat("direction");
                 long date = DATE_FORMAT.parse(matcher.nextString("date")).getTime();
                 matcher.nextFloat("asd");
-                int expected_checksum = matcher.nextHexInt("checksum");
-                int actual_checksum = calculateChecksum(sentence);
 
-                if (actual_checksum != expected_checksum) {
-                    handler.onBadChecksum(expected_checksum, actual_checksum);
-                } else {
-                    handler.onRMC(date,
-                            time,
-                            vDir.equals(VDir.N) ? latitude : -latitude,
-                            hDir.equals(HDir.E) ? longitude : -longitude,
-                            speed,
-                            direction);
-                }
+                handler.onRMC(date,
+                        time,
+                        vDir.equals(VDir.N) ? latitude : -latitude,
+                        hDir.equals(HDir.E) ? longitude : -longitude,
+                        speed,
+                        direction);
 
                 return true;
             }
@@ -145,7 +134,7 @@ public class BasicNMEAParser {
     }
 
     private static boolean parseGPGGA(BasicNMEAHandler handler, String sentence) throws Exception {
-        ExMatcher matcher = new ExMatcher(PATTERN_GPGGA.matcher(sentence));
+        ExMatcher matcher = new ExMatcher(GPGGA.matcher(sentence));
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
             time += fixms(matcher.nextInt("time-ms"));
@@ -164,20 +153,14 @@ public class BasicNMEAParser {
             float separation = matcher.nextFloat("separation");
             Float age = matcher.nextFloat("age");
             Integer station = matcher.nextInt("station");
-            int expected_checksum = matcher.nextHexInt("checksum");
-            int actual_checksum = calculateChecksum(sentence);
 
-            if (actual_checksum != expected_checksum) {
-                handler.onBadChecksum(expected_checksum, actual_checksum);
-            } else {
-                handler.onGGA(time,
-                        vDir.equals(VDir.N) ? latitude : -latitude,
-                        hDir.equals(HDir.E) ? longitude : -longitude,
-                        altitude - separation,
-                        quality,
-                        satellites,
-                        hdop);
-            }
+            handler.onGGA(time,
+                    vDir.equals(VDir.N) ? latitude : -latitude,
+                    hDir.equals(HDir.E) ? longitude : -longitude,
+                    altitude - separation,
+                    quality,
+                    satellites,
+                    hdop);
 
             return true;
         }
@@ -186,30 +169,20 @@ public class BasicNMEAParser {
     }
 
     private static boolean parseGPGSV(BasicNMEAHandler handler, String sentence) throws Exception {
-        ExMatcher matcher = new ExMatcher(PATTERN_GPGSV.matcher(sentence));
+        ExMatcher matcher = new ExMatcher(GPGSV.matcher(sentence));
         if (matcher.matches()) {
             int sentences = matcher.nextInt("n-sentences");
             int index = matcher.nextInt("sentence-index") - 1;
             int satellites = matcher.nextInt("n-satellites");
 
-            Integer[][] temp = new Integer[4][4];
             for (int i = 0; i < 4; i++) {
-                temp[i][0] = matcher.nextInt("prn");
-                temp[i][1] = matcher.nextInt("elevation");
-                temp[i][2] = matcher.nextInt("azimuth");
-                temp[i][3] = matcher.nextInt("snr");
-            }
+                Integer prn = matcher.nextInt("prn");
+                Integer elevation = matcher.nextInt("elevation");
+                Integer azimuth = matcher.nextInt("azimuth");
+                Integer snr = matcher.nextInt("snr");
 
-            int expected_checksum = matcher.nextHexInt("checksum");
-            int actual_checksum = calculateChecksum(sentence);
-
-            if (actual_checksum != expected_checksum) {
-                handler.onBadChecksum(expected_checksum, actual_checksum);
-            } else {
-                for (int i = 0; i < 4; i++) {
-                    if (temp[i][0] != null) {
-                        handler.onGSV(satellites, index * 4 + i, temp[i][0], temp[i][1], temp[i][2], temp[i][3]);
-                    }
+                if (prn != null) {
+                    handler.onGSV(satellites, index * 4 + i, prn, elevation, azimuth, snr);
                 }
             }
 
@@ -253,12 +226,21 @@ public class BasicNMEAParser {
 
         handler.onStart();
         try {
-            for (ParsingFunction function : functions) {
-                if (function.parse(handler, sentence)) {
-                    return;
+            ExMatcher matcher = new ExMatcher(GENERAL_SENTENCE.matcher(sentence));
+            if (matcher.matches()) {
+                String type = matcher.nextString("type");
+                String content = matcher.nextString("content");
+                int expected_checksum = matcher.nextHexInt("checksum");
+                int actual_checksum = calculateChecksum(sentence);
+
+                if (actual_checksum != expected_checksum) {
+                    handler.onBadChecksum(expected_checksum, actual_checksum);
+                } else if (!functions.containsKey(type) || !functions.get(type).parse(handler, content)) {
+                    handler.onUnrecognized(sentence);
                 }
+            } else {
+                handler.onUnrecognized(sentence);
             }
-            handler.onUnrecognized(sentence);
         } catch (Exception e) {
             handler.onException(e);
         } finally {
