@@ -1,5 +1,7 @@
 package com.github.petr_s.nmea.basic;
 
+import java.util.Set;
+
 public interface BasicNMEAHandler {
     void onStart();
 
@@ -41,6 +43,17 @@ public interface BasicNMEAHandler {
      */
     void onGSV(int satellites, int index, int prn, float elevation, float azimuth, int snr);
 
+    /***
+     * Called on GPGSA parsed.
+     *
+     * @param type type of fix
+     * @param prns set of satellites used for the current fix
+     * @param pdop position dilution of precision
+     * @param hdop horizontal dilution of precision
+     * @param vdop vertical dilution of precision
+     */
+    void onGSA(FixType type, Set<Integer> prns, float pdop, float hdop, float vdop);
+
     void onUnrecognized(String sentence);
 
     void onBadChecksum(int expected, int actual);
@@ -63,6 +76,19 @@ public interface BasicNMEAHandler {
         public final int value;
 
         FixQuality(int value) {
+            this.value = value;
+        }
+    }
+
+    enum FixType {
+        Invalid(0),
+        None(1),
+        Fix2D(2),
+        Fix3D(3);
+
+        public final int value;
+
+        FixType(int value) {
             this.value = value;
         }
     }

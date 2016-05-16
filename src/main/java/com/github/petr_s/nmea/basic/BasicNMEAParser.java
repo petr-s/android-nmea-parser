@@ -4,11 +4,11 @@ import com.github.petr_s.nmea.basic.BasicNMEAHandler.FixQuality;
 
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.github.petr_s.nmea.basic.BasicNMEAHandler.FixType;
 
 public class BasicNMEAParser {
     private static final float KNOTS2MPS = 0.514444f;
@@ -65,6 +65,25 @@ public class BasicNMEAParser {
             "(\\d{2})?" + COMMA + "?" +
             "(\\d{3})?" + COMMA + "?" +
             "(\\d{2})?");
+    private static final Pattern GPGSA = Pattern.compile(regexify(Mode.class) + COMMA +
+            "(\\d)" + COMMA +
+
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+            "(\\d{2})?" + COMMA +
+
+            CAP_FLOAT + "?" + COMMA +
+            CAP_FLOAT + "?" + COMMA +
+            CAP_FLOAT + "?");
     private static HashMap<String, ParsingFunction> functions = new HashMap<>();
 
     static {
@@ -86,6 +105,12 @@ public class BasicNMEAParser {
             @Override
             public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
                 return parseGPGSV(handler, sentence);
+            }
+        });
+        functions.put("GPGSA", new ParsingFunction() {
+            @Override
+            public boolean parse(BasicNMEAHandler handler, String sentence) throws Exception {
+                return parseGPGSA(handler, sentence);
             }
         });
     }
@@ -191,6 +216,29 @@ public class BasicNMEAParser {
         return false;
     }
 
+    private static boolean parseGPGSA(BasicNMEAHandler handler, String sentence) {
+        ExMatcher matcher = new ExMatcher(GPGSA.matcher(sentence));
+        if (matcher.matches()) {
+            Mode mode = Mode.valueOf(matcher.nextString("mode"));
+            FixType type = FixType.values()[matcher.nextInt("fix-type")];
+            Set<Integer> prns = new HashSet<>();
+            for (int i = 0; i < 12; i++) {
+                Integer prn = matcher.nextInt("prn");
+                if (prn != null) {
+                    prns.add(prn);
+                }
+            }
+            float pdop = matcher.nextFloat("pdop");
+            float hdop = matcher.nextFloat("hdop");
+            float vdop = matcher.nextFloat("vdop");
+
+            handler.onGSA(type, prns, pdop, hdop, vdop);
+
+            return true;
+        }
+        return false;
+    }
+
     private static int calculateChecksum(String sentence) throws UnsupportedEncodingException {
         byte[] bytes = sentence.substring(1, sentence.length() - 3).getBytes("US-ASCII");
         int checksum = 0;
@@ -261,6 +309,11 @@ public class BasicNMEAParser {
     private enum VDir {
         N,
         S,
+    }
+
+    private enum Mode {
+        A,
+        M
     }
 
     private static abstract class ParsingFunction {

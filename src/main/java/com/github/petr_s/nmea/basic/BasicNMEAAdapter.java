@@ -1,5 +1,7 @@
 package com.github.petr_s.nmea.basic;
 
+import java.util.Set;
+
 public class BasicNMEAAdapter implements BasicNMEAHandler {
     @Override
     public void onStart() {
@@ -18,6 +20,11 @@ public class BasicNMEAAdapter implements BasicNMEAHandler {
 
     @Override
     public void onGSV(int satellites, int index, int prn, float elevation, float azimuth, int snr) {
+
+    }
+
+    @Override
+    public void onGSA(FixType type, Set<Integer> prns, float pdop, float hdop, float vdop) {
 
     }
 

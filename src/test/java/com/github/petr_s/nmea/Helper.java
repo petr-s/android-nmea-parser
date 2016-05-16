@@ -3,6 +3,8 @@ package com.github.petr_s.nmea;
 import org.hamcrest.Description;
 import org.mockito.ArgumentMatcher;
 
+import java.util.Set;
+
 public class Helper {
     public static ArgumentMatcher<Double> roughlyEq(final double expected) {
         return roughlyEq(expected, 0.0001);
@@ -36,6 +38,20 @@ public class Helper {
             @Override
             public void describeTo(Description description) {
                 description.appendText(Float.toString(expected) + "±" + Float.toString(delta));
+            }
+        };
+    }
+
+    public static <T> ArgumentMatcher<Set> eq(final Set<T> expected) {
+        return new ArgumentMatcher<Set>() {
+            @Override
+            public boolean matches(Object argument) {
+                return argument.equals(expected);
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(expected.toString());
             }
         };
     }

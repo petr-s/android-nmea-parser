@@ -5,10 +5,16 @@ import org.junit.runner.RunWith;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import static com.github.petr_s.nmea.Helper.eq;
 import static com.github.petr_s.nmea.Helper.roughlyEq;
+import static com.github.petr_s.nmea.basic.BasicNMEAHandler.FixType.Fix3D;
 import static org.mockito.Matchers.doubleThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.floatThat;
+import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -200,6 +206,21 @@ public class BasicNMEAParserTest {
                 eq(135.0f),
                 eq(13));
         verify(handler, times(3)).onFinished();
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
+    public void testParseGPGSA() throws Exception {
+        String sentence = "$GPGSA,A,3,25,02,26,05,29,31,21,12,,,,,1.6,1.0,1.3*3B";
+        new BasicNMEAParser(handler).parse(sentence);
+
+        verify(handler).onStart();
+        verify(handler).onGSA(eq(Fix3D),
+                argThat(eq(new HashSet<>(Arrays.asList(new Integer[]{2, 5, 21, 25, 26, 12, 29, 31})))),
+                floatThat(roughlyEq(1.6f)),
+                floatThat(roughlyEq(1.0f)),
+                floatThat(roughlyEq(1.3f)));
+        verify(handler).onFinished();
         verifyNoMoreInteractions(handler);
     }
 }

@@ -4,6 +4,8 @@ import android.location.Location;
 import com.github.petr_s.nmea.basic.BasicNMEAHandler;
 import com.github.petr_s.nmea.basic.BasicNMEAParser;
 
+import java.util.Set;
+
 public class NMEAParser implements BasicNMEAHandler {
     public static final String LOCATION_PROVIDER_NAME = "nmea-parser";
     private static final int FLAG_RMC = 1;
@@ -91,6 +93,11 @@ public class NMEAParser implements BasicNMEAHandler {
 
     @Override
     public synchronized void onGSV(int satellites, int index, int prn, float elevation, float azimuth, int snr) {
+
+    }
+
+    @Override
+    public void onGSA(FixType type, Set<Integer> prns, float pdop, float hdop, float vdop) {
 
     }
 
