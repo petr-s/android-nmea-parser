@@ -10,8 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Arrays;
 
-import static com.github.petr_s.nmea.Helper.eq;
-import static com.github.petr_s.nmea.Helper.roughlyEq;
+import static com.github.petr_s.nmea.Helper.*;
 import static org.mockito.Mockito.*;
 
 
