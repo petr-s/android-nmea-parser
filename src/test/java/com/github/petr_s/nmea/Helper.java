@@ -3,6 +3,7 @@ package com.github.petr_s.nmea;
 import org.hamcrest.Description;
 import org.mockito.ArgumentMatcher;
 
+import java.util.List;
 import java.util.Set;
 
 public class Helper {
@@ -44,6 +45,20 @@ public class Helper {
 
     public static <T> ArgumentMatcher<Set> eq(final Set<T> expected) {
         return new ArgumentMatcher<Set>() {
+            @Override
+            public boolean matches(Object argument) {
+                return argument.equals(expected);
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText(expected.toString());
+            }
+        };
+    }
+
+    public static <T> ArgumentMatcher<List> eq(final List<T> expected) {
+        return new ArgumentMatcher<List>() {
             @Override
             public boolean matches(Object argument) {
                 return argument.equals(expected);

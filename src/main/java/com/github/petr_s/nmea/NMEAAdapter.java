@@ -2,6 +2,8 @@ package com.github.petr_s.nmea;
 
 import android.location.Location;
 
+import java.util.List;
+
 public class NMEAAdapter implements NMEAHandler {
     @Override
     public void onStart() {
@@ -10,6 +12,11 @@ public class NMEAAdapter implements NMEAHandler {
 
     @Override
     public void onLocation(Location location) {
+
+    }
+
+    @Override
+    public void onSatellites(List<GpsSatellite> satellites) {
 
     }
 

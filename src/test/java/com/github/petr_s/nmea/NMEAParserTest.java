@@ -8,6 +8,9 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Arrays;
+
+import static com.github.petr_s.nmea.Helper.eq;
 import static com.github.petr_s.nmea.Helper.roughlyEq;
 import static org.mockito.Mockito.*;
 
@@ -201,5 +204,99 @@ public class NMEAParserTest {
 
         verify(locationFactory, times(2)).newLocation();
         verifyNoMoreInteractions(locationFactory);
+    }
+
+    private GpsSatellite newSatellite(int prn, float elevation, float azimuth, int snr, boolean fix) {
+        GpsSatellite satellite = new GpsSatellite(prn);
+        satellite.setAzimuth(azimuth);
+        satellite.setElevation(elevation);
+        satellite.setSnr(snr);
+        satellite.setUsedInFix(fix);
+        satellite.setHasAlmanac(true);
+        satellite.setHasEphemeris(true);
+
+        return satellite;
+    }
+
+    @Test
+    public void testParseSatelliteGSVGSA() throws Exception {
+        parser.parse("$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D");
+        parser.parse("$GPGSA,A,3,25,02,26,05,29,31,21,12,,,,,1.6,1.0,1.3*3B");
+
+        verify(handler, times(2)).onStart();
+        verify(handler, times(2)).onFinish();
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
+    public void testParseSatellite3GSVGGA() throws Exception {
+        parser.parse("$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D");
+        parser.parse("$GPGSV,3,2,11,12,23,110,34,26,18,295,29,21,17,190,30,05,11,092,25*72");
+        parser.parse("$GPGSV,3,3,11,14,02,232,13,23,02,346,12,20,01,135,13*48");
+        parser.parse("$GPGSA,A,3,25,02,26,05,29,31,21,12,,,,,1.6,1.0,1.3*3B");
+
+        verify(handler, times(4)).onStart();
+        verify(handler, times(4)).onFinish();
+        verify(handler).onSatellites(argThat(eq(Arrays.asList(new GpsSatellite[]{
+                newSatellite(29, 86.0f, 273.0f, 30, true),
+                newSatellite(25, 60.0f, 110.0f, 38, true),
+                newSatellite(31, 52.0f, 278.0f, 47, true),
+                newSatellite(2, 28.0f, 50.0f, 39, true),
+                newSatellite(12, 23.0f, 110.0f, 34, true),
+                newSatellite(26, 18.0f, 295.0f, 29, true),
+                newSatellite(21, 17.0f, 190.0f, 30, true),
+                newSatellite(5, 11.0f, 92.0f, 25, true),
+                newSatellite(14, 2.0f, 232.0f, 13, false),
+                newSatellite(23, 2.0f, 346.0f, 12, false),
+                newSatellite(20, 1.0f, 135.0f, 13, false)}))));
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
+    public void testParseSatelliteGGA3GSV() throws Exception {
+        parser.parse("$GPGSA,A,3,25,02,26,05,29,31,21,12,,,,,1.6,1.0,1.3*3B");
+        parser.parse("$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D");
+        parser.parse("$GPGSV,3,2,11,12,23,110,34,26,18,295,29,21,17,190,30,05,11,092,25*72");
+        parser.parse("$GPGSV,3,3,11,14,02,232,13,23,02,346,12,20,01,135,13*48");
+
+        verify(handler, times(4)).onStart();
+        verify(handler, times(4)).onFinish();
+        verify(handler).onSatellites(argThat(eq(Arrays.asList(new GpsSatellite[]{
+                newSatellite(29, 86.0f, 273.0f, 30, true),
+                newSatellite(25, 60.0f, 110.0f, 38, true),
+                newSatellite(31, 52.0f, 278.0f, 47, true),
+                newSatellite(2, 28.0f, 50.0f, 39, true),
+                newSatellite(12, 23.0f, 110.0f, 34, true),
+                newSatellite(26, 18.0f, 295.0f, 29, true),
+                newSatellite(21, 17.0f, 190.0f, 30, true),
+                newSatellite(5, 11.0f, 92.0f, 25, true),
+                newSatellite(14, 2.0f, 232.0f, 13, false),
+                newSatellite(23, 2.0f, 346.0f, 12, false),
+                newSatellite(20, 1.0f, 135.0f, 13, false)}))));
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
+    public void testParseSatellite2GSVGGAGSV() throws Exception {
+        parser.parse("$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D");
+        parser.parse("$GPGSV,3,2,11,12,23,110,34,26,18,295,29,21,17,190,30,05,11,092,25*72");
+        parser.parse("$GPGSA,A,3,25,02,26,05,29,31,21,12,,,,,1.6,1.0,1.3*3B");
+        parser.parse("$GPGSV,3,3,11,14,02,232,13,23,02,346,12,20,01,135,13*48");
+
+        verify(handler, times(4)).onStart();
+        verify(handler, times(4)).onFinish();
+        verify(handler).onSatellites(argThat(eq(Arrays.asList(new GpsSatellite[]{
+                newSatellite(29, 86.0f, 273.0f, 30, true),
+                newSatellite(25, 60.0f, 110.0f, 38, true),
+                newSatellite(31, 52.0f, 278.0f, 47, true),
+                newSatellite(2, 28.0f, 50.0f, 39, true),
+                newSatellite(12, 23.0f, 110.0f, 34, true),
+                newSatellite(26, 18.0f, 295.0f, 29, true),
+                newSatellite(21, 17.0f, 190.0f, 30, true),
+                newSatellite(5, 11.0f, 92.0f, 25, true),
+                newSatellite(14, 2.0f, 232.0f, 13, false),
+                newSatellite(23, 2.0f, 346.0f, 12, false),
+                newSatellite(20, 1.0f, 135.0f, 13, false)}))));
+        verifyNoMoreInteractions(handler);
     }
 }
