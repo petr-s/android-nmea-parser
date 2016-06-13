@@ -28,7 +28,9 @@ public class BasicNMEAParser {
             CAP_FLOAT + "?" + COMMA +
             CAP_FLOAT + "?" + COMMA +
             "(\\d{6})?" + COMMA +
-            CAP_FLOAT + "?" + COMMA);
+            CAP_FLOAT + "?" + COMMA +
+            regexify(HDir.class) + "?" + COMMA + "?" +
+            regexify(FFA.class) + "?");
     private static final Pattern GPGGA = Pattern.compile("(\\d{6})?[.]?" +
             "(\\d*)?" + COMMA +
             "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
@@ -140,9 +142,11 @@ public class BasicNMEAParser {
                         matcher.nextInt("seconds"));
                 HDir hDir = HDir.valueOf(matcher.nextString("horizontal-direction"));
                 float speed = matcher.nextFloat("speed") * KNOTS2MPS;
-                float direction = matcher.nextFloat("direction");
+                float direction = matcher.nextFloat("direction", 0.0f);
                 long date = DATE_FORMAT.parse(matcher.nextString("date")).getTime();
-                matcher.nextFloat("asd");
+                Float magVar = matcher.nextFloat("magnetic-variation");
+                String magVarDir = matcher.nextString("direction");
+                String faa = matcher.nextString("faa");
 
                 handler.onRMC(date,
                         time,
@@ -316,6 +320,15 @@ public class BasicNMEAParser {
         M
     }
 
+    private enum FFA {
+        A,
+        D,
+        E,
+        M,
+        S,
+        N
+    }
+
     private static abstract class ParsingFunction {
         public abstract boolean parse(BasicNMEAHandler handler, String sentence) throws Exception;
     }
@@ -339,6 +352,11 @@ public class BasicNMEAParser {
 
         String nextString(String name) {
             return original.group(index++);
+        }
+
+        Float nextFloat(String name, Float defaultValue) {
+            Float next = nextFloat(name);
+            return next == null ? defaultValue : next;
         }
 
         Float nextFloat(String name) {

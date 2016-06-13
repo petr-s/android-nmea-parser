@@ -59,6 +59,22 @@ public class BasicNMEAParserTest {
     }
 
     @Test
+    public void testParseGPRMC_2_3() throws Exception {
+        String sentence = "$GPRMC,093933.40,A,5004.52493,N,01424.28771,E,0.277,,130616,,,A*76";
+        new BasicNMEAParser(handler).parse(sentence);
+
+        verify(handler).onStart();
+        verify(handler).onRMC(eq(1465776000000L),
+                eq(34773010L),
+                doubleThat(roughlyEq(64.648055)),
+                doubleThat(roughlyEq(22.391944)),
+                floatThat(roughlyEq(0.142501f)),
+                floatThat(roughlyEq(0.0f)));
+        verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
     public void testParseGPRMCBadChecksum() throws Exception {
         String sentence = "$GPRMC,163407.000,A,5004.7485,N,01423.8956,E,0.04,36.97,180416,,*42";
         new BasicNMEAParser(handler).parse(sentence);
