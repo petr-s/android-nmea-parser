@@ -72,7 +72,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.github.petr-s:android-nmea-parser:0.3.0'
+    compile 'com.github.petr-s:android-nmea-parser:0.4.0'
 }
 ```
 
@@ -81,7 +81,7 @@ dependencies {
 <dependency>
   <groupId>com.github.petr-s</groupId>
   <artifactId>android-nmea-parser</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <type>aar</type>
 </dependency>
 ```
