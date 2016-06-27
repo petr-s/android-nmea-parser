@@ -56,8 +56,8 @@ public class NMEAParserTest {
         verifyNoMoreInteractions(handler);
 
         verify(location).setTime(eq(1460954639384L));
-        verify(location).setLatitude(doubleThat(roughlyEq(52.14583)));
-        verify(location).setLongitude(doubleThat(roughlyEq(16.87111)));
+        verify(location).setLatitude(doubleThat(roughlyEq(50.07914)));
+        verify(location).setLongitude(doubleThat(roughlyEq(14.39825)));
         verify(location).setAltitude(doubleThat(roughlyEq(240.2)));
         verify(location).setAccuracy(floatThat(roughlyEq(6.8f)));
         verify(location).setSpeed(floatThat(roughlyEq(0.02057f)));
@@ -81,8 +81,8 @@ public class NMEAParserTest {
         verifyNoMoreInteractions(handler);
 
         verify(location).setTime(eq(1460954639384L));
-        verify(location).setLatitude(doubleThat(roughlyEq(52.14583)));
-        verify(location).setLongitude(doubleThat(roughlyEq(16.87111)));
+        verify(location).setLatitude(doubleThat(roughlyEq(50.079141)));
+        verify(location).setLongitude(doubleThat(roughlyEq(14.39825)));
         verify(location).setAltitude(doubleThat(roughlyEq(240.2)));
         verify(location).setAccuracy(floatThat(roughlyEq(6.8f)));
         verify(location).setSpeed(floatThat(roughlyEq(0.02057f)));
@@ -167,8 +167,8 @@ public class NMEAParserTest {
         verifyNoMoreInteractions(handler);
 
         verify(location).setTime(eq(1460954639384L));
-        verify(location).setLatitude(doubleThat(roughlyEq(52.14583)));
-        verify(location).setLongitude(doubleThat(roughlyEq(16.87111)));
+        verify(location).setLatitude(doubleThat(roughlyEq(50.079141)));
+        verify(location).setLongitude(doubleThat(roughlyEq(14.39825)));
         verify(location).setAltitude(doubleThat(roughlyEq(240.2)));
         verify(location).setAccuracy(floatThat(roughlyEq(6.8f)));
         verify(location).setSpeed(floatThat(roughlyEq(0.02057f)));
@@ -193,8 +193,8 @@ public class NMEAParserTest {
         verifyNoMoreInteractions(handler);
 
         verify(location).setTime(eq(1460954639384L));
-        verify(location).setLatitude(doubleThat(roughlyEq(52.14583)));
-        verify(location).setLongitude(doubleThat(roughlyEq(16.87111)));
+        verify(location).setLatitude(doubleThat(roughlyEq(50.07914)));
+        verify(location).setLongitude(doubleThat(roughlyEq(14.39825)));
         verify(location).setAltitude(doubleThat(roughlyEq(240.2)));
         verify(location).setAccuracy(floatThat(roughlyEq(6.8f)));
         verify(location).setSpeed(floatThat(roughlyEq(0.02057f)));

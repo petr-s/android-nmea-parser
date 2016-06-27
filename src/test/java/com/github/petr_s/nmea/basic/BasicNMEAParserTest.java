@@ -50,8 +50,8 @@ public class BasicNMEAParserTest {
         verify(handler).onStart();
         verify(handler).onRMC(eq(1460937600000L),
                 eq(59647000L),
-                doubleThat(roughlyEq(52.14583)),
-                doubleThat(roughlyEq(16.87111)),
+                doubleThat(roughlyEq(50.07914)),
+                doubleThat(roughlyEq(14.39825)),
                 floatThat(roughlyEq(0.02057f)),
                 floatThat(roughlyEq(36.97f)));
         verify(handler).onFinished();
@@ -66,8 +66,8 @@ public class BasicNMEAParserTest {
         verify(handler).onStart();
         verify(handler).onRMC(eq(1465776000000L),
                 eq(34773010L),
-                doubleThat(roughlyEq(64.648055)),
-                doubleThat(roughlyEq(22.391944)),
+                doubleThat(roughlyEq(50.075415)),
+                doubleThat(roughlyEq(14.404795)),
                 floatThat(roughlyEq(0.142501f)),
                 floatThat(roughlyEq(0.0f)));
         verify(handler).onFinished();
@@ -103,8 +103,8 @@ public class BasicNMEAParserTest {
 
         verify(handler).onStart();
         verify(handler).onGGA(eq(59647000L),
-                doubleThat(roughlyEq(52.14583)),
-                doubleThat(roughlyEq(16.87111)),
+                doubleThat(roughlyEq(50.07914)),
+                doubleThat(roughlyEq(14.39825)),
                 floatThat(roughlyEq(240.2f)),
                 eq(BasicNMEAHandler.FixQuality.GPS),
                 eq(7),

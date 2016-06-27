@@ -21,9 +21,9 @@ public class BasicNMEAParser {
     private static final Pattern GPRMC = Pattern.compile("(\\d{6})?[.]?" +
             "(\\d*)?" + COMMA +
             regexify(Status.class) + COMMA +
-            "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
+            "(\\d{2})(\\d{2}[.]\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
-            "(\\d{3})(\\d{2})[.](\\d+)?" + COMMA +
+            "(\\d{3})(\\d{2}[.]\\d+)?" + COMMA +
             regexify(HDir.class) + "?" + COMMA +
             CAP_FLOAT + "?" + COMMA +
             CAP_FLOAT + "?" + COMMA +
@@ -33,9 +33,9 @@ public class BasicNMEAParser {
             regexify(FFA.class) + "?");
     private static final Pattern GPGGA = Pattern.compile("(\\d{6})?[.]?" +
             "(\\d*)?" + COMMA +
-            "(\\d{2})(\\d{2})[.](\\d+)?" + COMMA +
+            "(\\d{2})(\\d{2}[.]\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
-            "(\\d{3})(\\d{2})[.](\\d+)?" + COMMA +
+            "(\\d{3})(\\d{2}[.]\\d+)?" + COMMA +
             regexify(HDir.class) + "?" + COMMA +
             "(\\d)?" + COMMA +
             "(\\d{2})?" + COMMA +
@@ -133,13 +133,11 @@ public class BasicNMEAParser {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
             time += fixms(matcher.nextInt("time-ms"));
             if (Status.valueOf(matcher.nextString("status")) == Status.A) {
-                double latitude = toAngle(matcher.nextInt("degrees"),
-                        matcher.nextInt("minutes"),
-                        matcher.nextInt("seconds"));
+                double latitude = toDegrees(matcher.nextInt("degrees"),
+                        matcher.nextFloat("minutes"));
                 VDir vDir = VDir.valueOf(matcher.nextString("vertical-direction"));
-                double longitude = toAngle(matcher.nextInt("degrees"),
-                        matcher.nextInt("minutes"),
-                        matcher.nextInt("seconds"));
+                double longitude = toDegrees(matcher.nextInt("degrees"),
+                        matcher.nextFloat("minutes"));
                 HDir hDir = HDir.valueOf(matcher.nextString("horizontal-direction"));
                 float speed = matcher.nextFloat("speed") * KNOTS2MPS;
                 float direction = matcher.nextFloat("direction", 0.0f);
@@ -167,13 +165,11 @@ public class BasicNMEAParser {
         if (matcher.matches()) {
             long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
             time += fixms(matcher.nextInt("time-ms"));
-            double latitude = toAngle(matcher.nextInt("degrees"),
-                    matcher.nextInt("minutes"),
-                    matcher.nextInt("seconds"));
+            double latitude = toDegrees(matcher.nextInt("degrees"),
+                    matcher.nextFloat("minutes"));
             VDir vDir = VDir.valueOf(matcher.nextString("vertical-direction"));
-            double longitude = toAngle(matcher.nextInt("degrees"),
-                    matcher.nextInt("minutes"),
-                    matcher.nextInt("seconds"));
+            double longitude = toDegrees(matcher.nextInt("degrees"),
+                    matcher.nextFloat("minutes"));
             HDir hDir = HDir.valueOf(matcher.nextString("horizontal-direction"));
             FixQuality quality = FixQuality.values()[matcher.nextInt("quality")];
             int satellites = matcher.nextInt("n-satellites");
@@ -256,8 +252,8 @@ public class BasicNMEAParser {
         return ms == 0 ? 0 : (int) Math.pow(10, 3 - (int) (Math.log10(ms) + 1));
     }
 
-    private static double toAngle(int d, int m, int s) {
-        return d + m / 60.0 + s / 3600.0;
+    private static double toDegrees(int degrees, float minutes) {
+        return degrees + minutes / 60.0;
     }
 
     private static <T extends Enum<T>> String regexify(Class<T> clazz) {
