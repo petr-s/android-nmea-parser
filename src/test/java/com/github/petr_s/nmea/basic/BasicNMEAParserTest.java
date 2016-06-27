@@ -65,7 +65,7 @@ public class BasicNMEAParserTest {
 
         verify(handler).onStart();
         verify(handler).onRMC(eq(1465776000000L),
-                eq(34773010L),
+                eq(34773400L),
                 doubleThat(roughlyEq(50.075415)),
                 doubleThat(roughlyEq(14.404795)),
                 floatThat(roughlyEq(0.142501f)),

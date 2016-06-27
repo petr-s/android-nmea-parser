@@ -18,8 +18,8 @@ public class BasicNMEAParser {
     private static final String CAP_FLOAT = "(\\d*[.]?\\d+)";
     private static final String HEX_INT = "[0-9a-fA-F]";
     private static final Pattern GENERAL_SENTENCE = Pattern.compile("^\\$(\\w{5}),(.*)[*](" + HEX_INT + "{2})$");
-    private static final Pattern GPRMC = Pattern.compile("(\\d{6})?[.]?" +
-            "(\\d*)?" + COMMA +
+    private static final Pattern GPRMC = Pattern.compile("(\\d{5})?" +
+            "(\\d[.]?\\d*)?" + COMMA +
             regexify(Status.class) + COMMA +
             "(\\d{2})(\\d{2}[.]\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
@@ -31,8 +31,8 @@ public class BasicNMEAParser {
             CAP_FLOAT + "?" + COMMA +
             regexify(HDir.class) + "?" + COMMA + "?" +
             regexify(FFA.class) + "?");
-    private static final Pattern GPGGA = Pattern.compile("(\\d{6})?[.]?" +
-            "(\\d*)?" + COMMA +
+    private static final Pattern GPGGA = Pattern.compile("(\\d{5})?" +
+            "(\\d[.]?\\d*)?" + COMMA +
             "(\\d{2})(\\d{2}[.]\\d+)?" + COMMA +
             regexify(VDir.class) + "?" + COMMA +
             "(\\d{3})(\\d{2}[.]\\d+)?" + COMMA +
@@ -130,8 +130,11 @@ public class BasicNMEAParser {
     private static boolean parseGPRMC(BasicNMEAHandler handler, String sentence) throws Exception {
         ExMatcher matcher = new ExMatcher(GPRMC.matcher(sentence));
         if (matcher.matches()) {
-            long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
-            time += fixms(matcher.nextInt("time-ms"));
+            long time = TIME_FORMAT.parse(matcher.nextString("time") + "0").getTime();
+            Float ms = matcher.nextFloat("time-ms");
+            if (ms != null) {
+                time += ms * 1000;
+            }
             if (Status.valueOf(matcher.nextString("status")) == Status.A) {
                 double latitude = toDegrees(matcher.nextInt("degrees"),
                         matcher.nextFloat("minutes"));
@@ -163,8 +166,11 @@ public class BasicNMEAParser {
     private static boolean parseGPGGA(BasicNMEAHandler handler, String sentence) throws Exception {
         ExMatcher matcher = new ExMatcher(GPGGA.matcher(sentence));
         if (matcher.matches()) {
-            long time = TIME_FORMAT.parse(matcher.nextString("time")).getTime();
-            time += fixms(matcher.nextInt("time-ms"));
+            long time = TIME_FORMAT.parse(matcher.nextString("time") + "0").getTime();
+            Float ms = matcher.nextFloat("time-ms");
+            if (ms != null) {
+                time += ms * 1000;
+            }
             double latitude = toDegrees(matcher.nextInt("degrees"),
                     matcher.nextFloat("minutes"));
             VDir vDir = VDir.valueOf(matcher.nextString("vertical-direction"));
@@ -246,10 +252,6 @@ public class BasicNMEAParser {
             checksum ^= b;
         }
         return checksum;
-    }
-
-    private static int fixms(int ms) {
-        return ms == 0 ? 0 : (int) Math.pow(10, 3 - (int) (Math.log10(ms) + 1));
     }
 
     private static double toDegrees(int degrees, float minutes) {
