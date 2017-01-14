@@ -114,6 +114,23 @@ public class BasicNMEAParserTest {
     }
 
     @Test
+    public void testParseGPGGANegativeGeoid() throws Exception {
+        String sentence = "$GPGGA,214213.00,3249.263664,N,11710.592247,W,1,11,0.6,102.2,M,-26.0,M,,*51";
+        new BasicNMEAParser(handler).parse(sentence);
+
+        verify(handler).onStart();
+        verify(handler).onGGA(eq(78133000L),
+                doubleThat(roughlyEq(32.82106)),
+                doubleThat(roughlyEq(-117.17653)),
+                floatThat(roughlyEq(128.2f)),
+                eq(BasicNMEAHandler.FixQuality.GPS),
+                eq(11),
+                floatThat(roughlyEq(0.6f)));
+        verify(handler).onFinished();
+        verifyNoMoreInteractions(handler);
+    }
+
+    @Test
     public void testParseGPGSVSingle() throws Exception {
         String sentence = "$GPGSV,3,1,11,29,86,273,30,25,60,110,38,31,52,278,47,02,28,050,39*7D";
         new BasicNMEAParser(handler).parse(sentence);
