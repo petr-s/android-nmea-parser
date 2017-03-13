@@ -16,6 +16,7 @@ public class BasicNMEAParser {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("ddMMyy", Locale.US);
     private static final String COMMA = ",";
     private static final String CAP_FLOAT = "(\\d*[.]?\\d+)";
+    private static final String CAP_FLOAT_ALT = "(-?\\d*[.]?\\d+)";
     private static final String HEX_INT = "[0-9a-fA-F]";
     private static final Pattern GENERAL_SENTENCE = Pattern.compile("^\\$(\\w{5}),(.*)[*](" + HEX_INT + "{2})$");
     private static final Pattern GPRMC = Pattern.compile("(\\d{5})?" +
@@ -40,8 +41,8 @@ public class BasicNMEAParser {
             "(\\d)?" + COMMA +
             "(\\d{2})?" + COMMA +
             CAP_FLOAT + "?" + COMMA +
-            CAP_FLOAT + "?,[M]" + COMMA +
-            CAP_FLOAT + "?,[M]" + COMMA +
+            CAP_FLOAT_ALT + "?,[M]" + COMMA +
+            CAP_FLOAT_ALT + "?,[M]" + COMMA +
             CAP_FLOAT + "?" + COMMA +
             "(\\d{4})?");
     private static final Pattern GPGSV = Pattern.compile("(\\d+)" + COMMA +
